@@ -67,7 +67,7 @@ const Index = () => {
             </div>
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               {["Cyberpunk", "4K", "Anime", "Nature", "Dark"].map((tag) => (
-                <span key={tag} className="badge-glass text-muted-foreground hover:text-primary cursor-pointer transition-colors">
+                <span key={tag} onClick={() => navigate(`/explore?search=${encodeURIComponent(tag)}`)} className="badge-glass text-muted-foreground hover:text-primary cursor-pointer transition-colors">
                   {tag}
                 </span>
               ))}
