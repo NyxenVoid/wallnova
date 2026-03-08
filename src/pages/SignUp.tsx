@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/sonner";
 
 const SignUp = () => {
   const [username, setUsername] = useState("");
@@ -11,12 +13,20 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { signUp } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: integrate with Supabase auth
-    setTimeout(() => setIsLoading(false), 1500);
+    const { error } = await signUp(email, password, username);
+    setIsLoading(false);
+    if (error) {
+      toast.error(error);
+    } else {
+      toast.success("Account created! Check your email to verify.");
+      navigate("/sign-in");
+    }
   };
 
   return (

@@ -1,11 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
-import { Search, Menu, X, Heart } from "lucide-react";
+import { Search, Menu, X, Heart, LogOut, User } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/sonner";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   const links = [
     { to: "/", label: "Home" },
@@ -14,10 +17,14 @@ const Navbar = () => {
     { to: "/leaderboard", label: "Leaderboard" },
   ];
 
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out successfully");
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-glass-border">
       <div className="container mx-auto flex items-center justify-between px-4 py-3">
-        {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <div className="relative h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <span className="font-display text-sm font-bold text-primary-foreground">W</span>
@@ -28,7 +35,6 @@ const Navbar = () => {
           </span>
         </Link>
 
-        {/* Desktop links */}
         <div className="hidden md:flex items-center gap-6">
           {links.map((link) => (
             <Link
@@ -45,7 +51,6 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* Desktop actions */}
         <div className="hidden md:flex items-center gap-3">
           <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
             <Search size={18} />
@@ -53,12 +58,22 @@ const Navbar = () => {
           <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
             <Heart size={18} />
           </button>
-          <Link to="/sign-in" className="btn-glow text-sm px-4 py-2">
-            Sign In
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <Link to="/profile" className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
+                <User size={18} />
+              </Link>
+              <button onClick={handleSignOut} className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
+                <LogOut size={18} />
+              </button>
+            </div>
+          ) : (
+            <Link to="/sign-in" className="btn-glow text-sm px-4 py-2">
+              Sign In
+            </Link>
+          )}
         </div>
 
-        {/* Mobile toggle */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           className="md:hidden p-2 text-muted-foreground"
@@ -67,7 +82,6 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -87,7 +101,15 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
-              <Link to="/sign-in" className="btn-glow text-sm mt-2 w-full text-center block">Sign In</Link>
+              {user ? (
+                <button onClick={() => { handleSignOut(); setMobileOpen(false); }} className="btn-glow text-sm mt-2 w-full">
+                  Sign Out
+                </button>
+              ) : (
+                <Link to="/sign-in" onClick={() => setMobileOpen(false)} className="btn-glow text-sm mt-2 w-full text-center block">
+                  Sign In
+                </Link>
+              )}
             </div>
           </motion.div>
         )}
