@@ -33,7 +33,8 @@ const colorFilters = [
 const Explore = () => {
   const [searchParams] = useSearchParams();
   const initialCategory = searchParams.get("category") || "All";
-  const [searchQuery, setSearchQuery] = useState("");
+  const initialSearch = searchParams.get("search") || "";
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedType, setSelectedType] = useState("All");
   const [selectedColor, setSelectedColor] = useState("All");

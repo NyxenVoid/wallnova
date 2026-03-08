@@ -1,7 +1,7 @@
 import { Search, TrendingUp, Sparkles, Clock, Award } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import heroBg from "@/assets/hero-bg.jpg";
 import WallpaperCard from "@/components/WallpaperCard";
 import { wallpapers, categories } from "@/data/wallpapers";
@@ -9,6 +9,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const trending = wallpapers.filter((w) => w.trending);
   const featured = wallpapers.filter((w) => w.featured);
@@ -50,6 +51,7 @@ const Index = () => {
             className="max-w-2xl mx-auto"
           >
             <div className="relative">
+              <form onSubmit={(e) => { e.preventDefault(); if (searchQuery.trim()) navigate(`/explore?search=${encodeURIComponent(searchQuery.trim())}`); }}>
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
               <input
                 type="text"
@@ -58,13 +60,14 @@ const Index = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="glass-input w-full pl-12 pr-32 py-4 text-base rounded-2xl"
               />
-              <button className="btn-glow absolute right-2 top-1/2 -translate-y-1/2 text-sm px-5 py-2 rounded-xl">
+              <button type="submit" className="btn-glow absolute right-2 top-1/2 -translate-y-1/2 text-sm px-5 py-2 rounded-xl">
                 Search
               </button>
+              </form>
             </div>
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               {["Cyberpunk", "4K", "Anime", "Nature", "Dark"].map((tag) => (
-                <span key={tag} className="badge-glass text-muted-foreground hover:text-primary cursor-pointer transition-colors">
+                <span key={tag} onClick={() => navigate(`/explore?search=${encodeURIComponent(tag)}`)} className="badge-glass text-muted-foreground hover:text-primary cursor-pointer transition-colors">
                   {tag}
                 </span>
               ))}
