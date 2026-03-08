@@ -1,15 +1,15 @@
-import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 const PrivacyPolicy = () => {
   return (
     <>
-      <Helmet>
-        <title>Privacy Policy – WallNova</title>
-        <meta name="description" content="WallNova privacy policy. Learn how we collect, use, and protect your personal data." />
-        <link rel="canonical" href="/privacy-policy" />
-      </Helmet>
+      <SEOHead
+        title="Privacy Policy – How We Protect Your Data"
+        description="WallNova privacy policy. Learn how we collect, use, and protect your personal data. We do not sell your information."
+        canonical="/privacy-policy"
+      />
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="pt-24 pb-16 container mx-auto px-4 max-w-3xl">

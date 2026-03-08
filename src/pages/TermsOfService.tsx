@@ -1,15 +1,15 @@
-import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 const TermsOfService = () => {
   return (
     <>
-      <Helmet>
-        <title>Terms of Service – WallNova</title>
-        <meta name="description" content="WallNova terms of service. Understand the rules and responsibilities when using our wallpaper platform." />
-        <link rel="canonical" href="/terms-of-service" />
-      </Helmet>
+      <SEOHead
+        title="Terms of Service – Rules & Responsibilities"
+        description="WallNova terms of service. Understand the rules and responsibilities when using our wallpaper platform."
+        canonical="/terms-of-service"
+      />
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="pt-24 pb-16 container mx-auto px-4 max-w-3xl">
