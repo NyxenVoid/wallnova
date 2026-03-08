@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import WallpaperDetail from "./pages/WallpaperDetail";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import Explore from "./pages/Explore";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/wallpaper/:id" element={<WallpaperDetail />} />
+            <Route path="/explore" element={<Explore />} />
             <Route path="/sign-in" element={<SignIn />} />
             <Route path="/sign-up" element={<SignUp />} />
             <Route path="*" element={<NotFound />} />
