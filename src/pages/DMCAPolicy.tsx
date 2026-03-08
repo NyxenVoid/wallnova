@@ -1,15 +1,15 @@
-import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 const DMCAPolicy = () => {
   return (
     <>
-      <Helmet>
-        <title>DMCA Copyright Policy – WallNova</title>
-        <meta name="description" content="WallNova DMCA copyright policy. Learn how to submit a takedown request for copyrighted content." />
-        <link rel="canonical" href="/dmca" />
-      </Helmet>
+      <SEOHead
+        title="DMCA Copyright Policy – Takedown Requests"
+        description="WallNova DMCA copyright policy. Learn how to submit a takedown request for copyrighted content."
+        canonical="/dmca-copyright-policy"
+      />
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="pt-24 pb-16 container mx-auto px-4 max-w-3xl">
