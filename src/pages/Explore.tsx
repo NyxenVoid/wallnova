@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import WallpaperCard from "@/components/WallpaperCard";
-import { wallpapers, categories } from "@/data/wallpapers";
+import { wallpapers as staticWallpapers, categories, Wallpaper } from "@/data/wallpapers";
+import { useWallpapers } from "@/hooks/use-wallpapers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -39,8 +40,35 @@ const Explore = () => {
   const [sortBy, setSortBy] = useState("popular");
   const [showFilters, setShowFilters] = useState(true);
 
+  const { data: dbWallpapers = [] } = useWallpapers();
+
+  // Merge DB wallpapers into the WallpaperCard format
+  const dbAsCards: Wallpaper[] = dbWallpapers.map((w) => ({
+    id: w.id,
+    title: w.title,
+    description: w.description || "",
+    imageUrl: w.image_url,
+    category: w.category,
+    resolution: w.resolution,
+    type: w.type,
+    tags: w.tags,
+    downloads: w.downloads,
+    likes: w.likes_count || 0,
+    rating: w.avg_rating || 0,
+    creator: { name: w.creator_name || "Unknown", avatar: w.creator_avatar || "", id: w.user_id },
+    createdAt: w.created_at,
+    featured: w.featured,
+    trending: w.trending,
+  }));
+
+  const allWallpapers = useMemo(() => {
+    // Combine static + DB, dedup by id
+    const seen = new Set(dbAsCards.map((w) => w.id));
+    return [...dbAsCards, ...staticWallpapers.filter((w) => !seen.has(w.id))];
+  }, [dbAsCards]);
+
   const filtered = useMemo(() => {
-    let results = [...wallpapers];
+    let results = [...allWallpapers];
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -120,7 +148,7 @@ const Explore = () => {
               Explore Wallpapers
             </h1>
             <p className="text-muted-foreground">
-              Discover {wallpapers.length.toLocaleString()}+ stunning wallpapers
+              Discover {allWallpapers.length.toLocaleString()}+ stunning wallpapers
             </p>
           </motion.div>
 
