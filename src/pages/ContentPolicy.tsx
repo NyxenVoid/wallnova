@@ -1,16 +1,16 @@
-import { Helmet } from "react-helmet-async";
 import { Shield, AlertTriangle, Ban, CheckCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 const ContentPolicy = () => {
   return (
     <>
-      <Helmet>
-        <title>Content Policy & Upload Rules – WallNova</title>
-        <meta name="description" content="WallNova content policy and community guidelines. Learn what content is allowed and prohibited on our wallpaper platform." />
-        <link rel="canonical" href="/content-policy" />
-      </Helmet>
+      <SEOHead
+        title="Content Policy & Upload Rules – Community Guidelines"
+        description="WallNova content policy and community guidelines. Learn what content is allowed and prohibited on our wallpaper platform."
+        canonical="/content-policy"
+      />
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="pt-24 pb-16 container mx-auto px-4 max-w-3xl">
