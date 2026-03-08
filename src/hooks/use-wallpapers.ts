@@ -285,6 +285,33 @@ export function useUploadWallpaper() {
     }) => {
       if (!user) throw new Error("Must be signed in");
 
+      // Convert image to base64 for moderation
+      const reader = new FileReader();
+      const imageBase64: string = await new Promise((resolve) => {
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.readAsDataURL(file);
+      });
+
+      // Run AI moderation check
+      const { data: modResult, error: modError } = await supabase.functions.invoke(
+        "moderate-content",
+        {
+          body: { title, description, tags, imageBase64 },
+        }
+      );
+
+      if (modError) {
+        console.error("Moderation error:", modError);
+        // Don't block on moderation service failure
+      } else if (modResult && !modResult.approved) {
+        const violationDetails = modResult.violations
+          .map((v: any) => `• ${v.details} (${v.type})`)
+          .join("\n");
+        throw new Error(
+          `Your upload was rejected by our content moderation system:\n${violationDetails}`
+        );
+      }
+
       const ext = file.name.split(".").pop();
       const path = `${user.id}/${Date.now()}.${ext}`;
 
