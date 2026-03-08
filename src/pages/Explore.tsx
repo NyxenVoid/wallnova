@@ -1,6 +1,7 @@
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import WallpaperCard from "@/components/WallpaperCard";
 import { wallpapers, categories } from "@/data/wallpapers";
 import Navbar from "@/components/Navbar";
@@ -29,8 +30,10 @@ const colorFilters = [
 ];
 
 const Explore = () => {
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get("category") || "All";
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedType, setSelectedType] = useState("All");
   const [selectedColor, setSelectedColor] = useState("All");
   const [sortBy, setSortBy] = useState("popular");
