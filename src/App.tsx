@@ -21,6 +21,7 @@ import TermsOfService from "./pages/TermsOfService";
 import ContentPolicy from "./pages/ContentPolicy";
 import DMCAPolicy from "./pages/DMCAPolicy";
 import NotFound from "./pages/NotFound";
+import CookieConsent from "./components/CookieConsent";
 
 const queryClient = new QueryClient();
 
