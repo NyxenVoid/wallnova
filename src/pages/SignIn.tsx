@@ -1,26 +1,35 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/sonner";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: integrate with Supabase auth
-    setTimeout(() => setIsLoading(false), 1500);
+    const { error } = await signIn(email, password);
+    setIsLoading(false);
+    if (error) {
+      toast.error(error);
+    } else {
+      toast.success("Welcome back!");
+      navigate("/");
+    }
   };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden px-4">
-      {/* Ambient glow effects */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-accent/10 blur-[120px] pointer-events-none" />
 
@@ -30,7 +39,6 @@ const SignIn = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        {/* Back link */}
         <Link
           to="/"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
@@ -39,9 +47,7 @@ const SignIn = () => {
           <span className="text-sm">Back to home</span>
         </Link>
 
-        {/* Card */}
         <div className="glass-card rounded-2xl p-8 border border-[hsl(var(--glass-border))]">
-          {/* Logo */}
           <div className="text-center mb-8">
             <Link to="/" className="inline-flex items-center gap-2 mb-4">
               <div className="relative h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
@@ -55,7 +61,6 @@ const SignIn = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Email</label>
               <div className="relative">
@@ -71,7 +76,6 @@ const SignIn = () => {
               </div>
             </div>
 
-            {/* Password */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Password</label>
               <div className="relative">
@@ -94,14 +98,12 @@ const SignIn = () => {
               </div>
             </div>
 
-            {/* Forgot password */}
             <div className="text-right">
               <Link to="/forgot-password" className="text-xs text-primary hover:underline">
                 Forgot password?
               </Link>
             </div>
 
-            {/* Submit */}
             <Button
               type="submit"
               disabled={isLoading}
@@ -111,14 +113,12 @@ const SignIn = () => {
             </Button>
           </form>
 
-          {/* Divider */}
           <div className="flex items-center gap-3 my-6">
             <div className="flex-1 h-px bg-border" />
             <span className="text-xs text-muted-foreground">or</span>
             <div className="flex-1 h-px bg-border" />
           </div>
 
-          {/* Sign up link */}
           <p className="text-center text-sm text-muted-foreground">
             Don't have an account?{" "}
             <Link to="/sign-up" className="text-primary hover:underline font-medium">
