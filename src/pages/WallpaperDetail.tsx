@@ -1,17 +1,50 @@
 import { useParams, Link } from "react-router-dom";
 import { Download, Heart, Star, ArrowLeft, Share2, Monitor, Smartphone, Tag } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
 import { wallpapers } from "@/data/wallpapers";
+import { useWallpaper, useToggleLike, useRateWallpaper } from "@/hooks/use-wallpapers";
+import { useAuth } from "@/contexts/AuthContext";
 import WallpaperCard from "@/components/WallpaperCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { toast } from "sonner";
 
 const WallpaperDetail = () => {
   const { id } = useParams();
-  const wallpaper = wallpapers.find((w) => w.id === id);
-  const [liked, setLiked] = useState(false);
-  const [userRating, setUserRating] = useState(0);
+  const { user } = useAuth();
+  const { data: dbWallpaper } = useWallpaper(id);
+  const toggleLike = useToggleLike();
+  const rateWallpaper = useRateWallpaper();
+
+  // Fallback to static data
+  const staticWallpaper = wallpapers.find((w) => w.id === id);
+  const isDbWallpaper = !!dbWallpaper;
+
+  const wallpaper = dbWallpaper
+    ? {
+        id: dbWallpaper.id,
+        title: dbWallpaper.title,
+        description: dbWallpaper.description || "",
+        imageUrl: dbWallpaper.image_url,
+        category: dbWallpaper.category,
+        resolution: dbWallpaper.resolution,
+        type: dbWallpaper.type,
+        tags: dbWallpaper.tags,
+        downloads: dbWallpaper.downloads,
+        likes: dbWallpaper.likes_count || 0,
+        rating: dbWallpaper.avg_rating || 0,
+        creator: {
+          name: dbWallpaper.creator_name || "Unknown",
+          avatar: dbWallpaper.creator_avatar || "",
+          id: dbWallpaper.user_id,
+        },
+        createdAt: dbWallpaper.created_at,
+        userLiked: dbWallpaper.user_liked,
+        userRating: dbWallpaper.user_rating,
+      }
+    : staticWallpaper
+    ? { ...staticWallpaper, imageUrl: staticWallpaper.imageUrl, userLiked: false, userRating: 0 }
+    : null;
 
   if (!wallpaper) {
     return (
@@ -24,19 +57,34 @@ const WallpaperDetail = () => {
     );
   }
 
+  const handleLike = () => {
+    if (!user) { toast.error("Sign in to like wallpapers"); return; }
+    if (isDbWallpaper) {
+      toggleLike.mutate({ wallpaperId: wallpaper.id, liked: !!wallpaper.userLiked });
+    }
+  };
+
+  const handleRate = (star: number) => {
+    if (!user) { toast.error("Sign in to rate wallpapers"); return; }
+    if (isDbWallpaper) {
+      rateWallpaper.mutate({ wallpaperId: wallpaper.id, rating: star });
+    }
+  };
+
   const related = wallpapers.filter((w) => w.id !== id && w.category === wallpaper.category).slice(0, 4);
   const moreRelated = related.length < 4
     ? [...related, ...wallpapers.filter((w) => w.id !== id && !related.find((r) => r.id === w.id)).slice(0, 4 - related.length)]
     : related;
 
   const formatCount = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : n.toString());
+  const liked = wallpaper.userLiked || false;
+  const userRating = wallpaper.userRating || 0;
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
       <div className="pt-20 container mx-auto px-4">
-        {/* Back */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="mb-6">
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft size={16} /> Back to Home
@@ -44,36 +92,17 @@ const WallpaperDetail = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Image */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2">
             <div className="glass-card overflow-hidden rounded-2xl">
-              <div className="relative">
-                <img
-                  src={wallpaper.imageUrl}
-                  alt={wallpaper.title}
-                  className="w-full h-auto object-cover"
-                />
-              </div>
+              <img src={wallpaper.imageUrl} alt={wallpaper.title} className="w-full h-auto object-cover" />
             </div>
           </motion.div>
 
-          {/* Sidebar Info */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="space-y-6"
-          >
-            {/* Title & actions */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="space-y-6">
             <div className="glass-card p-6 rounded-2xl">
               <h1 className="font-display text-2xl font-bold text-foreground">{wallpaper.title}</h1>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{wallpaper.description}</p>
 
-              {/* Stats */}
               <div className="mt-4 flex items-center gap-4">
                 <span className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Download size={14} /> {formatCount(wallpaper.downloads)}
@@ -86,15 +115,13 @@ const WallpaperDetail = () => {
                 </span>
               </div>
 
-              {/* Download */}
               <button className="btn-glow w-full mt-6 flex items-center justify-center gap-2 py-3">
                 <Download size={18} /> Download Wallpaper
               </button>
 
-              {/* Actions row */}
               <div className="mt-3 flex gap-2">
                 <button
-                  onClick={() => setLiked(!liked)}
+                  onClick={handleLike}
                   className={`flex-1 glass-card flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${
                     liked ? "text-red-400 border-red-400/30" : "text-muted-foreground hover:text-foreground"
                   }`}
@@ -107,16 +134,11 @@ const WallpaperDetail = () => {
               </div>
             </div>
 
-            {/* Rating */}
             <div className="glass-card p-6 rounded-2xl">
               <h3 className="font-display text-sm font-semibold text-foreground mb-3">Rate this wallpaper</h3>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    onClick={() => setUserRating(star)}
-                    className="p-1 transition-transform hover:scale-125"
-                  >
+                  <button key={star} onClick={() => handleRate(star)} className="p-1 transition-transform hover:scale-125">
                     <Star
                       size={24}
                       className={star <= userRating ? "text-primary" : "text-muted-foreground/30"}
@@ -127,7 +149,6 @@ const WallpaperDetail = () => {
               </div>
             </div>
 
-            {/* Details */}
             <div className="glass-card p-6 rounded-2xl space-y-3">
               <h3 className="font-display text-sm font-semibold text-foreground mb-3">Details</h3>
               <DetailRow icon={<Monitor size={14} />} label="Resolution" value={wallpaper.resolution} />
@@ -135,7 +156,6 @@ const WallpaperDetail = () => {
               <DetailRow icon={<Tag size={14} />} label="Category" value={wallpaper.category} />
             </div>
 
-            {/* Creator */}
             <div className="glass-card p-6 rounded-2xl">
               <h3 className="font-display text-sm font-semibold text-foreground mb-3">Creator</h3>
               <div className="flex items-center gap-3">
@@ -147,7 +167,6 @@ const WallpaperDetail = () => {
               </div>
             </div>
 
-            {/* Tags */}
             <div className="glass-card p-6 rounded-2xl">
               <h3 className="font-display text-sm font-semibold text-foreground mb-3">Tags</h3>
               <div className="flex flex-wrap gap-2">
@@ -161,7 +180,6 @@ const WallpaperDetail = () => {
           </motion.div>
         </div>
 
-        {/* Related */}
         <section className="mt-16">
           <h2 className="font-display text-2xl font-bold text-foreground mb-6">Related Wallpapers</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">

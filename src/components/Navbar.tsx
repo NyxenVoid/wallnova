@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Search, Menu, X, Heart, LogOut, User } from "lucide-react";
+import { Search, Menu, X, Heart, LogOut, User, Upload } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -60,6 +60,9 @@ const Navbar = () => {
           </button>
           {user ? (
             <div className="flex items-center gap-2">
+              <Link to="/upload" className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors" title="Upload">
+                <Upload size={18} />
+              </Link>
               <Link to="/profile" className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
                 <User size={18} />
               </Link>
