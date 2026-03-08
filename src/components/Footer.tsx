@@ -45,7 +45,7 @@ const Footer = () => {
               <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
               <Link to="/terms-of-service" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link>
               <Link to="/content-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Content Policy</Link>
-              <Link to="/dmca" className="text-sm text-muted-foreground hover:text-foreground transition-colors">DMCA Policy</Link>
+              <Link to="/dmca-copyright-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">DMCA Policy</Link>
             </div>
             <button className="mt-4 btn-glow text-xs px-4 py-2 flex items-center gap-2">
               <Heart size={14} />
