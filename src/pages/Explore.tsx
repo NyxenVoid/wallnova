@@ -148,7 +148,7 @@ const Explore = () => {
               Explore Wallpapers
             </h1>
             <p className="text-muted-foreground">
-              Discover {wallpapers.length.toLocaleString()}+ stunning wallpapers
+              Discover {allWallpapers.length.toLocaleString()}+ stunning wallpapers
             </p>
           </motion.div>
 
