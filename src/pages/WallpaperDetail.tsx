@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import WallpaperCard from "@/components/WallpaperCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
+import { generateWallpaperTitle, generateWallpaperDescription, generateImageAlt, wallpaperJsonLd } from "@/lib/seo";
 import { toast } from "sonner";
 
 const WallpaperDetail = () => {
@@ -16,7 +18,6 @@ const WallpaperDetail = () => {
   const toggleLike = useToggleLike();
   const rateWallpaper = useRateWallpaper();
 
-  // Fallback to static data
   const staticWallpaper = wallpapers.find((w) => w.id === id);
   const isDbWallpaper = !!dbWallpaper;
 
@@ -49,6 +50,7 @@ const WallpaperDetail = () => {
   if (!wallpaper) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
+        <SEOHead title="Wallpaper Not Found" description="The wallpaper you're looking for doesn't exist." noIndex />
         <div className="text-center">
           <h1 className="font-display text-3xl font-bold text-foreground">Wallpaper not found</h1>
           <Link to="/" className="btn-glow inline-block mt-4 text-sm">Go Home</Link>
@@ -56,6 +58,21 @@ const WallpaperDetail = () => {
       </div>
     );
   }
+
+  const seoTitle = generateWallpaperTitle(wallpaper.title, wallpaper.category, wallpaper.type);
+  const seoDesc = generateWallpaperDescription(wallpaper.title, wallpaper.description, wallpaper.category, wallpaper.resolution, wallpaper.tags);
+  const altText = generateImageAlt(wallpaper.title, wallpaper.category, wallpaper.type);
+  const jsonLd = wallpaperJsonLd({
+    title: wallpaper.title,
+    description: wallpaper.description,
+    imageUrl: wallpaper.imageUrl,
+    category: wallpaper.category,
+    resolution: wallpaper.resolution,
+    creator: wallpaper.creator,
+    createdAt: wallpaper.createdAt,
+    downloads: wallpaper.downloads,
+    rating: wallpaper.rating,
+  });
 
   const handleLike = () => {
     if (!user) { toast.error("Sign in to like wallpapers"); return; }
@@ -82,6 +99,14 @@ const WallpaperDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={seoTitle}
+        description={seoDesc}
+        canonical={`/wallpaper/${wallpaper.id}`}
+        image={wallpaper.imageUrl}
+        type="article"
+        jsonLd={jsonLd}
+      />
       <Navbar />
 
       <div className="pt-20 container mx-auto px-4">
@@ -94,7 +119,13 @@ const WallpaperDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2">
             <div className="glass-card overflow-hidden rounded-2xl">
-              <img src={wallpaper.imageUrl} alt={wallpaper.title} className="w-full h-auto object-cover" />
+              <img
+                src={wallpaper.imageUrl}
+                alt={altText}
+                className="w-full h-auto object-cover"
+                loading="eager"
+                fetchPriority="high"
+              />
             </div>
           </motion.div>
 
@@ -159,7 +190,7 @@ const WallpaperDetail = () => {
             <div className="glass-card p-6 rounded-2xl">
               <h3 className="font-display text-sm font-semibold text-foreground mb-3">Creator</h3>
               <div className="flex items-center gap-3">
-                <img src={wallpaper.creator.avatar} alt={wallpaper.creator.name} className="w-10 h-10 rounded-full bg-muted" />
+                <img src={wallpaper.creator.avatar} alt={`${wallpaper.creator.name} avatar`} className="w-10 h-10 rounded-full bg-muted" loading="lazy" />
                 <div>
                   <p className="font-display text-sm font-semibold text-foreground">{wallpaper.creator.name}</p>
                   <p className="text-xs text-muted-foreground">View Profile</p>
@@ -171,9 +202,13 @@ const WallpaperDetail = () => {
               <h3 className="font-display text-sm font-semibold text-foreground mb-3">Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {wallpaper.tags.map((tag) => (
-                  <span key={tag} className="badge-glass text-muted-foreground hover:text-primary cursor-pointer transition-colors">
+                  <Link
+                    key={tag}
+                    to={`/explore?search=${encodeURIComponent(tag)}`}
+                    className="badge-glass text-muted-foreground hover:text-primary cursor-pointer transition-colors"
+                  >
                     #{tag}
-                  </span>
+                  </Link>
                 ))}
               </div>
             </div>
