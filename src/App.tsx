@@ -11,6 +11,7 @@ import SignUp from "./pages/SignUp";
 import Explore from "./pages/Explore";
 import Upload from "./pages/Upload";
 import Profile from "./pages/Profile";
+import Categories from "./pages/Categories";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
