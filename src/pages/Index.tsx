@@ -168,11 +168,13 @@ const Index = () => {
               transition={{ delay: i * 0.05 }}
               viewport={{ once: true }}
             >
-              <div className="glass-card-hover p-4 text-center cursor-pointer group">
-                <span className="text-3xl block mb-2">{cat.icon}</span>
-                <h4 className="font-display text-sm font-semibold text-foreground">{cat.name}</h4>
-                <p className="text-xs text-muted-foreground mt-1">{cat.count.toLocaleString()} walls</p>
-              </div>
+              <Link to={`/explore?category=${encodeURIComponent(cat.name)}`}>
+                <div className="glass-card-hover p-4 text-center cursor-pointer group">
+                  <span className="text-3xl block mb-2">{cat.icon}</span>
+                  <h4 className="font-display text-sm font-semibold text-foreground">{cat.name}</h4>
+                  <p className="text-xs text-muted-foreground mt-1">{cat.count.toLocaleString()} walls</p>
+                </div>
+              </Link>
             </motion.div>
           ))}
         </div>
