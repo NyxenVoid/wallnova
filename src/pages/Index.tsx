@@ -1,12 +1,13 @@
 import { Search, TrendingUp, Sparkles, Clock, Award } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import heroBg from "@/assets/hero-bg.jpg";
 import WallpaperCard from "@/components/WallpaperCard";
 import { wallpapers, categories } from "@/data/wallpapers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
