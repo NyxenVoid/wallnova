@@ -52,6 +52,7 @@ const App = () => (
               <Route path="/dmca-copyright-policy" element={<DMCAPolicy />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <CookieConsent />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
