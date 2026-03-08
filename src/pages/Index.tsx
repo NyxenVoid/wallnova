@@ -102,9 +102,9 @@ const Index = () => {
             className="mt-10 flex justify-center gap-8 sm:gap-12"
           >
             {[
-              { label: "Wallpapers", value: "50K+" },
-              { label: "Downloads", value: "2M+" },
-              { label: "Creators", value: "8K+" },
+              { label: "Wallpapers", value: liveStats.wallpapers.toLocaleString() },
+              { label: "Downloads", value: liveStats.downloads.toLocaleString() },
+              { label: "Creators", value: liveStats.creators.toLocaleString() },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="font-display text-2xl font-bold text-primary">{stat.value}</div>
