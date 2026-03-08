@@ -13,6 +13,8 @@ import Upload from "./pages/Upload";
 import Profile from "./pages/Profile";
 import Categories from "./pages/Categories";
 import Leaderboard from "./pages/Leaderboard";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
