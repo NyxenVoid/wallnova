@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      content_violations: {
+        Row: {
+          ai_confidence: number | null
+          content_snippet: string | null
+          created_at: string
+          details: string | null
+          id: string
+          reviewed: boolean
+          severity: string
+          user_id: string
+          violation_type: string
+          wallpaper_id: string | null
+        }
+        Insert: {
+          ai_confidence?: number | null
+          content_snippet?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          reviewed?: boolean
+          severity?: string
+          user_id: string
+          violation_type: string
+          wallpaper_id?: string | null
+        }
+        Update: {
+          ai_confidence?: number | null
+          content_snippet?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          reviewed?: boolean
+          severity?: string
+          user_id?: string
+          violation_type?: string
+          wallpaper_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_violations_wallpaper_id_fkey"
+            columns: ["wallpaper_id"]
+            isOneToOne: false
+            referencedRelation: "wallpapers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
