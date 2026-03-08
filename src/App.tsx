@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import WallpaperDetail from "./pages/WallpaperDetail";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import Explore from "./pages/Explore";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
