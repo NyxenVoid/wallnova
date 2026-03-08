@@ -56,6 +56,115 @@ export type Database = {
         }
         Relationships: []
       }
+      wallpaper_likes: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          wallpaper_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          wallpaper_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+          wallpaper_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallpaper_likes_wallpaper_id_fkey"
+            columns: ["wallpaper_id"]
+            isOneToOne: false
+            referencedRelation: "wallpapers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallpaper_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          rating: number
+          user_id: string
+          wallpaper_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rating: number
+          user_id: string
+          wallpaper_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rating?: number
+          user_id?: string
+          wallpaper_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallpaper_ratings_wallpaper_id_fkey"
+            columns: ["wallpaper_id"]
+            isOneToOne: false
+            referencedRelation: "wallpapers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallpapers: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          downloads: number
+          featured: boolean
+          id: string
+          image_url: string
+          resolution: string
+          tags: string[] | null
+          title: string
+          trending: boolean
+          type: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          downloads?: number
+          featured?: boolean
+          id?: string
+          image_url: string
+          resolution?: string
+          tags?: string[] | null
+          title: string
+          trending?: boolean
+          type?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          downloads?: number
+          featured?: boolean
+          id?: string
+          image_url?: string
+          resolution?: string
+          tags?: string[] | null
+          title?: string
+          trending?: boolean
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
