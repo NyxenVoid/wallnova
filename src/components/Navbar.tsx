@@ -53,9 +53,9 @@ const Navbar = () => {
           <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
             <Heart size={18} />
           </button>
-          <button className="btn-glow text-sm px-4 py-2">
+          <Link to="/sign-in" className="btn-glow text-sm px-4 py-2">
             Sign In
-          </button>
+          </Link>
         </div>
 
         {/* Mobile toggle */}
@@ -87,7 +87,7 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
-              <button className="btn-glow text-sm mt-2 w-full">Sign In</button>
+              <Link to="/sign-in" className="btn-glow text-sm mt-2 w-full text-center block">Sign In</Link>
             </div>
           </motion.div>
         )}
