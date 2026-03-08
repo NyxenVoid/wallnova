@@ -48,6 +48,7 @@ const App = () => (
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/content-policy" element={<ContentPolicy />} />
               <Route path="/dmca" element={<DMCAPolicy />} />
+              <Route path="/dmca-copyright-policy" element={<DMCAPolicy />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
