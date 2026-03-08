@@ -1,19 +1,39 @@
 import { Search, TrendingUp, Sparkles, Clock, Award } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import heroBg from "@/assets/hero-bg.jpg";
 import WallpaperCard from "@/components/WallpaperCard";
 import { wallpapers, categories } from "@/data/wallpapers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [liveStats, setLiveStats] = useState({ wallpapers: 0, downloads: 0, creators: 0 });
   const trending = wallpapers.filter((w) => w.trending);
   const featured = wallpapers.filter((w) => w.featured);
-  const dailyPick = wallpapers[6]; // Aurora Borealis
+  const dailyPick = wallpapers[6];
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const [{ count: wallpaperCount }, downloadsRes, creatorsRes] = await Promise.all([
+        supabase.from("wallpapers").select("*", { count: "exact", head: true }),
+        supabase.from("wallpapers").select("downloads"),
+        supabase.from("wallpapers").select("user_id"),
+      ]);
+      const totalDownloads = (downloadsRes.data || []).reduce((sum, w) => sum + (w.downloads || 0), 0);
+      const uniqueCreators = new Set((creatorsRes.data || []).map((w) => w.user_id)).size;
+      setLiveStats({
+        wallpapers: wallpaperCount || 0,
+        downloads: totalDownloads,
+        creators: uniqueCreators,
+      });
+    };
+    fetchStats();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -82,9 +102,9 @@ const Index = () => {
             className="mt-10 flex justify-center gap-8 sm:gap-12"
           >
             {[
-              { label: "Wallpapers", value: "50K+" },
-              { label: "Downloads", value: "2M+" },
-              { label: "Creators", value: "8K+" },
+              { label: "Wallpapers", value: liveStats.wallpapers.toLocaleString() },
+              { label: "Downloads", value: liveStats.downloads.toLocaleString() },
+              { label: "Creators", value: liveStats.creators.toLocaleString() },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="font-display text-2xl font-bold text-primary">{stat.value}</div>
