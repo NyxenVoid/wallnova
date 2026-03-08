@@ -20,11 +20,10 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-semibold text-foreground mb-3">Explore</h4>
             <div className="flex flex-col gap-2">
-              {["Trending", "Featured", "Categories", "New Uploads"].map((item) => (
-                <span key={item} className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                  {item}
-                </span>
-              ))}
+              <Link to="/explore" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Trending</Link>
+              <Link to="/explore" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Featured</Link>
+              <Link to="/categories" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Categories</Link>
+              <Link to="/explore" className="text-sm text-muted-foreground hover:text-foreground transition-colors">New Uploads</Link>
             </div>
           </div>
 
@@ -32,23 +31,21 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-semibold text-foreground mb-3">Community</h4>
             <div className="flex flex-col gap-2">
-              {["Leaderboard", "Upload", "Creators", "Discord"].map((item) => (
-                <span key={item} className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                  {item}
-                </span>
-              ))}
+              <Link to="/leaderboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Leaderboard</Link>
+              <Link to="/upload" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Upload</Link>
+              <Link to="/content-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Content Policy</Link>
+              <span className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">Discord</span>
             </div>
           </div>
 
-          {/* Support */}
+          {/* Legal */}
           <div>
-            <h4 className="font-display font-semibold text-foreground mb-3">Support</h4>
+            <h4 className="font-display font-semibold text-foreground mb-3">Legal</h4>
             <div className="flex flex-col gap-2">
-              {["About", "Contact", "Privacy", "Terms"].map((item) => (
-                <span key={item} className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                  {item}
-                </span>
-              ))}
+              <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
+              <Link to="/terms-of-service" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link>
+              <Link to="/content-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Content Policy</Link>
+              <Link to="/dmca" className="text-sm text-muted-foreground hover:text-foreground transition-colors">DMCA Policy</Link>
             </div>
             <button className="mt-4 btn-glow text-xs px-4 py-2 flex items-center gap-2">
               <Heart size={14} />

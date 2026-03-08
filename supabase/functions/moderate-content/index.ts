@@ -15,6 +15,7 @@ interface ModerationResult {
     details: string;
     confidence: number;
   }[];
+  uploadLimitReached?: boolean;
 }
 
 serve(async (req) => {
@@ -42,6 +43,53 @@ serve(async (req) => {
       });
     }
 
+    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Check daily upload limit (3 per day)
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const { count: todayUploads } = await supabaseAdmin
+      .from("wallpapers")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", todayStart.toISOString());
+
+    if ((todayUploads || 0) >= 3) {
+      return new Response(JSON.stringify({
+        approved: false,
+        uploadLimitReached: true,
+        violations: [{
+          type: "rate_limit",
+          severity: "warning",
+          details: "You have reached the daily upload limit of 3 wallpapers. Please try again tomorrow.",
+          confidence: 1.0,
+        }],
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check if user has too many violations (restrict uploads after 5 violations)
+    const { count: violationCount } = await supabaseAdmin
+      .from("content_violations")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .in("severity", ["severe", "critical"]);
+
+    if ((violationCount || 0) >= 5) {
+      return new Response(JSON.stringify({
+        approved: false,
+        violations: [{
+          type: "account_restricted",
+          severity: "critical",
+          details: "Your upload privileges have been suspended due to repeated policy violations. Contact moderation@wallnova.com to appeal.",
+          confidence: 1.0,
+        }],
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { title, description, tags, imageBase64 } = await req.json();
 
     // Build the moderation prompt
@@ -56,22 +104,24 @@ serve(async (req) => {
     const messages: any[] = [
       {
         role: "system",
-        content: `You are a strict content moderation AI for a wallpaper sharing platform. You must analyze both text and images for policy violations.
+        content: `You are a strict content moderation AI for a wallpaper sharing platform called WallNova. You must analyze both text and images for policy violations.
 
 Detect these violation categories:
 - "abusive_language": Profanity, slurs, hate speech, harassment, threats, or discriminatory language
 - "sexual_content": Nudity, sexually explicit or suggestive content in images or text
 - "personal_info": Personal photos (selfies, identifiable faces in casual settings), phone numbers, addresses, or private data
-- "violence": Graphic violence, gore, or disturbing imagery
-- "spam": Repetitive nonsensical text, gibberish, or obvious spam
-- "copyright": Obvious watermarked content from other platforms
+- "violence": Graphic violence, gore, disturbing imagery, or content promoting self-harm
+- "spam": Repetitive nonsensical text, gibberish, obvious spam, or extremely low-quality content
+- "copyright": Obvious watermarked content from other platforms, stock photo watermarks
+- "low_quality": Extremely low resolution images (below 720p), heavily compressed/artifacted images, blurry or unfocused images
+- "illegal_content": Content promoting illegal activities, drugs, or dangerous behavior
 
 Respond ONLY with a JSON object matching this schema:
 {
   "approved": boolean,
   "violations": [
     {
-      "type": "abusive_language" | "sexual_content" | "personal_info" | "violence" | "spam" | "copyright",
+      "type": "abusive_language" | "sexual_content" | "personal_info" | "violence" | "spam" | "copyright" | "low_quality" | "illegal_content",
       "severity": "warning" | "severe" | "critical",
       "details": "Brief explanation",
       "confidence": 0.0-1.0
@@ -82,11 +132,12 @@ Respond ONLY with a JSON object matching this schema:
 Rules:
 - If no violations found, return {"approved": true, "violations": []}
 - Only flag violations with confidence >= 0.7
-- "critical" severity = immediate block (explicit sexual, extreme violence, hate speech)
-- "severe" = strong violation (suggestive content, personal photos, moderate abuse)
-- "warning" = mild concern (borderline language, mild spam)
+- "critical" severity = immediate block (explicit sexual, extreme violence, hate speech, illegal content)
+- "severe" = strong violation (suggestive content, personal photos, moderate abuse, watermarked content)
+- "warning" = mild concern (borderline language, mild spam, slightly low quality)
 - Be strict but fair. Artistic content (paintings, digital art) with mild themes is OK.
-- Wallpaper-appropriate content: landscapes, abstract, gaming, anime (non-sexual), digital art, etc.`,
+- Wallpaper-appropriate content: landscapes, abstract, gaming, anime (non-sexual), digital art, etc.
+- Flag ANY image that appears to be a personal photo/selfie rather than a wallpaper.`,
       },
     ];
 
@@ -138,7 +189,6 @@ Rules:
       }
       const errText = await aiResponse.text();
       console.error("AI gateway error:", aiResponse.status, errText);
-      // On AI failure, allow the upload but log it
       return new Response(JSON.stringify({ approved: true, violations: [], warning: "Moderation temporarily unavailable" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -147,7 +197,7 @@ Rules:
     const aiData = await aiResponse.json();
     const rawContent = aiData.choices?.[0]?.message?.content || "";
 
-    // Parse the JSON from the response (handle markdown code blocks)
+    // Parse the JSON from the response
     let result: ModerationResult;
     try {
       const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
@@ -157,9 +207,8 @@ Rules:
       result = { approved: true, violations: [] };
     }
 
-    // Log violations to database using service role
+    // Log violations to database
     if (result.violations.length > 0) {
-      const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
       const violationRows = result.violations.map((v) => ({
         user_id: user.id,
         violation_type: v.type,
