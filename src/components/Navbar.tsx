@@ -87,7 +87,7 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
-              <button className="btn-glow text-sm mt-2 w-full">Sign In</button>
+              <Link to="/sign-in" className="btn-glow text-sm mt-2 w-full text-center block">Sign In</Link>
             </div>
           </motion.div>
         )}
