@@ -304,6 +304,9 @@ export function useUploadWallpaper() {
         console.error("Moderation error:", modError);
         // Don't block on moderation service failure
       } else if (modResult && !modResult.approved) {
+        if (modResult.uploadLimitReached) {
+          throw new Error("You've reached your daily upload limit of 3 wallpapers. Please try again tomorrow.");
+        }
         const violationDetails = modResult.violations
           .map((v: any) => `• ${v.details} (${v.type})`)
           .join("\n");

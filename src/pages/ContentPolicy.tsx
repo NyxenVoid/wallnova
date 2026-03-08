@@ -20,7 +20,7 @@ const ContentPolicy = () => {
           <div className="prose prose-invert max-w-none space-y-6 text-muted-foreground text-sm leading-relaxed">
             <section>
               <div className="flex items-center gap-2 mb-3">
-                <CheckCircle className="text-green-400" size={20} />
+                <CheckCircle className="text-primary" size={20} />
                 <h2 className="text-xl font-semibold text-foreground">What's Allowed</h2>
               </div>
               <ul className="list-disc pl-6 space-y-1 mt-2">
@@ -67,7 +67,7 @@ const ContentPolicy = () => {
 
             <section>
               <div className="flex items-center gap-2 mb-3">
-                <AlertTriangle className="text-yellow-400" size={20} />
+                <AlertTriangle className="text-accent-foreground" size={20} />
                 <h2 className="text-xl font-semibold text-foreground">Upload Limits</h2>
               </div>
               <p>To maintain quality and reduce spam, users are limited to <strong className="text-foreground">3 uploads per day</strong>.</p>
