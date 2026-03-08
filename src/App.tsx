@@ -27,6 +27,7 @@ const App = () => (
             <Route path="/wallpaper/:id" element={<WallpaperDetail />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/upload" element={<Upload />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/sign-in" element={<SignIn />} />
             <Route path="/sign-up" element={<SignUp />} />
             <Route path="*" element={<NotFound />} />
