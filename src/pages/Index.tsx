@@ -12,9 +12,28 @@ import { supabase } from "@/integrations/supabase/client";
 const Index = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [liveStats, setLiveStats] = useState({ wallpapers: 0, downloads: 0, creators: 0 });
   const trending = wallpapers.filter((w) => w.trending);
   const featured = wallpapers.filter((w) => w.featured);
-  const dailyPick = wallpapers[6]; // Aurora Borealis
+  const dailyPick = wallpapers[6];
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const [{ count: wallpaperCount }, downloadsRes, creatorsRes] = await Promise.all([
+        supabase.from("wallpapers").select("*", { count: "exact", head: true }),
+        supabase.from("wallpapers").select("downloads"),
+        supabase.from("wallpapers").select("user_id"),
+      ]);
+      const totalDownloads = (downloadsRes.data || []).reduce((sum, w) => sum + (w.downloads || 0), 0);
+      const uniqueCreators = new Set((creatorsRes.data || []).map((w) => w.user_id)).size;
+      setLiveStats({
+        wallpapers: wallpaperCount || 0,
+        downloads: totalDownloads,
+        creators: uniqueCreators,
+      });
+    };
+    fetchStats();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
