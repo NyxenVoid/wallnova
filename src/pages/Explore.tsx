@@ -62,7 +62,12 @@ const Explore = () => {
     let results = [...allWallpapers];
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      results = results.filter((w) => w.title.toLowerCase().includes(q) || w.description.toLowerCase().includes(q) || w.tags.some((t) => t.includes(q)));
+      results = results.filter((w) =>
+        w.title.toLowerCase().includes(q) ||
+        w.description.toLowerCase().includes(q) ||
+        w.tags.some((t) => t.toLowerCase().includes(q)) ||
+        w.category.toLowerCase().includes(q)
+      );
     }
     if (selectedCategory !== "All") results = results.filter((w) => w.category === selectedCategory);
     if (selectedType !== "All") results = results.filter((w) => w.type === selectedType);
