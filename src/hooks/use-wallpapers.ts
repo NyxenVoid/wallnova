@@ -96,6 +96,8 @@ export function useAdminUploadWallpaper() {
       type,
       tags,
       resolution,
+      adminEmail,
+      adminPassword,
     }: {
       file: File;
       title: string;
@@ -104,11 +106,12 @@ export function useAdminUploadWallpaper() {
       type: "mobile" | "desktop" | "4k";
       tags: string[];
       resolution: string;
+      adminEmail: string;
+      adminPassword: string;
     }) => {
-      // Sign in as admin
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: import.meta.env.VITE_ADMIN_EMAIL,
-        password: import.meta.env.VITE_ADMIN_PASSWORD,
+        email: adminEmail,
+        password: adminPassword,
       });
       if (authError || !authData.user) throw new Error("Admin authentication failed");
 
@@ -136,7 +139,6 @@ export function useAdminUploadWallpaper() {
       });
       if (insertError) throw insertError;
 
-      // Sign out after upload
       await supabase.auth.signOut();
     },
     onSuccess: () => {
