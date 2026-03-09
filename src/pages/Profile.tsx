@@ -1,16 +1,20 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, Settings, Image, Heart, Star, Edit2, LogOut, Camera } from "lucide-react";
+import { User, Settings, Image, Heart, Star, Edit2, LogOut, Camera, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWallpapers } from "@/hooks/use-wallpapers";
+import { useWallpapers, useDeleteWallpaper } from "@/hooks/use-wallpapers";
 import WallpaperCard from "@/components/WallpaperCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Profile = () => {
   const { user, signOut } = useAuth();
@@ -28,7 +32,8 @@ const Profile = () => {
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
   const [saving, setSaving] = useState(false);
-
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; image_url: string; title: string } | null>(null);
+  const deleteWallpaper = useDeleteWallpaper();
   // Fetch user's wallpapers
   const { data: allWallpapers } = useWallpapers();
   const myWallpapers = (allWallpapers || []).filter((w) => w.user_id === user?.id);
@@ -199,7 +204,20 @@ const Profile = () => {
               {cardWallpapers.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                   {cardWallpapers.map((w, i) => (
-                    <WallpaperCard key={w.id} wallpaper={w} index={i} />
+                    <div key={w.id} className="relative group/card">
+                      <WallpaperCard wallpaper={w} index={i} />
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const orig = myWallpapers.find((mw) => mw.id === w.id);
+                          if (orig) setDeleteTarget({ id: orig.id, image_url: orig.image_url, title: orig.title });
+                        }}
+                        className="absolute top-2 right-2 z-10 p-2 rounded-full bg-background/80 text-destructive opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
+                        title="Delete wallpaper"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -247,6 +265,31 @@ const Profile = () => {
           )}
         </div>
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete wallpaper?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deleteTarget?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteTarget) {
+                  deleteWallpaper.mutate({ id: deleteTarget.id, image_url: deleteTarget.image_url });
+                  setDeleteTarget(null);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Footer />
     </div>

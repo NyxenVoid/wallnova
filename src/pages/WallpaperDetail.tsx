@@ -1,8 +1,9 @@
-import { useParams, Link } from "react-router-dom";
-import { Download, Heart, Star, ArrowLeft, Share2, Monitor, Smartphone, Tag, Play } from "lucide-react";
+import { useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { Download, Heart, Star, ArrowLeft, Share2, Monitor, Smartphone, Tag, Play, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { wallpapers } from "@/data/wallpapers";
-import { useWallpaper, useToggleLike, useRateWallpaper } from "@/hooks/use-wallpapers";
+import { useWallpaper, useToggleLike, useRateWallpaper, useDeleteWallpaper } from "@/hooks/use-wallpapers";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import WallpaperCard from "@/components/WallpaperCard";
@@ -11,6 +12,10 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { generateWallpaperTitle, generateWallpaperDescription, generateImageAlt, wallpaperJsonLd } from "@/lib/seo";
 import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const isVideo = (url: string) => /\.(mp4|webm)(\?|$)/i.test(url);
 const isGif = (url: string) => /\.gif(\?|$)/i.test(url);
@@ -18,9 +23,12 @@ const isGif = (url: string) => /\.gif(\?|$)/i.test(url);
 const WallpaperDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: dbWallpaper } = useWallpaper(id);
   const toggleLike = useToggleLike();
   const rateWallpaper = useRateWallpaper();
+  const deleteWallpaper = useDeleteWallpaper();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const staticWallpaper = wallpapers.find((w) => w.id === id);
   const isDbWallpaper = !!dbWallpaper;
@@ -215,6 +223,15 @@ const WallpaperDetail = () => {
                   <Share2 size={16} /> Share
                 </button>
               </div>
+
+              {isDbWallpaper && user && dbWallpaper && user.id === dbWallpaper.user_id && (
+                <button
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="w-full mt-2 glass-card flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                >
+                  <Trash2 size={16} /> Delete Wallpaper
+                </button>
+              )}
             </div>
 
             <div className="glass-card p-6 rounded-2xl">
@@ -277,6 +294,33 @@ const WallpaperDetail = () => {
           </div>
         </section>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete wallpaper?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{wallpaper.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (dbWallpaper) {
+                  deleteWallpaper.mutate(
+                    { id: dbWallpaper.id, image_url: dbWallpaper.image_url },
+                    { onSuccess: () => navigate("/profile") }
+                  );
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Footer />
     </div>
