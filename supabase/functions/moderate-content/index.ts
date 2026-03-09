@@ -202,9 +202,9 @@ Rules:
     try {
       const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
       result = jsonMatch ? JSON.parse(jsonMatch[0]) : { approved: true, violations: [] };
-    } catch {
+      // Don't silently approve on parse failure - block suspicious content
       console.error("Failed to parse moderation response:", rawContent);
-      result = { approved: true, violations: [] };
+      result = { approved: false, violations: [{ type: "spam", severity: "warning" as const, details: "Content could not be verified. Please try again.", confidence: 1.0 }] };
     }
 
     // Log violations to database

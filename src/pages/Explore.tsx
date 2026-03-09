@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const resolutions = ["All", "768x1024", "1920x1080", "3840x2160"];
-const types = ["All", "mobile", "desktop", "4k"];
+const types = ["All", "mobile", "desktop", "4k", "animated"];
 const sortOptions = [
   { value: "popular", label: "Most Popular" },
   { value: "newest", label: "Newest" },
@@ -62,10 +62,19 @@ const Explore = () => {
     let results = [...allWallpapers];
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      results = results.filter((w) => w.title.toLowerCase().includes(q) || w.description.toLowerCase().includes(q) || w.tags.some((t) => t.includes(q)));
+      results = results.filter((w) =>
+        w.title.toLowerCase().includes(q) ||
+        w.description.toLowerCase().includes(q) ||
+        w.tags.some((t) => t.toLowerCase().includes(q)) ||
+        w.category.toLowerCase().includes(q)
+      );
     }
     if (selectedCategory !== "All") results = results.filter((w) => w.category === selectedCategory);
-    if (selectedType !== "All") results = results.filter((w) => w.type === selectedType);
+    if (selectedType === "animated") {
+      results = results.filter((w) => /\.(gif|mp4|webm)(\?|$)/i.test(w.imageUrl) || w.tags.some((t) => t === "animated"));
+    } else if (selectedType !== "All") {
+      results = results.filter((w) => w.type === selectedType);
+    }
     if (selectedColor !== "All") {
       const colorTag = selectedColor.toLowerCase();
       results = results.filter((w) => w.tags.some((t) => t.includes(colorTag)) || w.description.toLowerCase().includes(colorTag));
