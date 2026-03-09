@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const resolutions = ["All", "768x1024", "1920x1080", "3840x2160"];
-const types = ["All", "mobile", "desktop", "4k"];
+const types = ["All", "mobile", "desktop", "4k", "animated"];
 const sortOptions = [
   { value: "popular", label: "Most Popular" },
   { value: "newest", label: "Newest" },
