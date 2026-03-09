@@ -70,7 +70,7 @@ const WallpaperDetail = () => {
     imageUrl: wallpaper.imageUrl,
     category: wallpaper.category,
     resolution: wallpaper.resolution,
-    creator: { name: "WallNova", avatar: "", id: "admin" },
+    creator: { name: "WallNova" },
     createdAt: wallpaper.createdAt,
     downloads: wallpaper.downloads,
     rating: 0,
