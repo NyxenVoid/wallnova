@@ -295,6 +295,33 @@ const WallpaperDetail = () => {
         </section>
       </div>
 
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete wallpaper?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{wallpaper.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (dbWallpaper) {
+                  deleteWallpaper.mutate(
+                    { id: dbWallpaper.id, image_url: dbWallpaper.image_url },
+                    { onSuccess: () => navigate("/profile") }
+                  );
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Footer />
     </div>
   );
