@@ -23,9 +23,12 @@ const isGif = (url: string) => /\.gif(\?|$)/i.test(url);
 const WallpaperDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: dbWallpaper } = useWallpaper(id);
   const toggleLike = useToggleLike();
   const rateWallpaper = useRateWallpaper();
+  const deleteWallpaper = useDeleteWallpaper();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const staticWallpaper = wallpapers.find((w) => w.id === id);
   const isDbWallpaper = !!dbWallpaper;
