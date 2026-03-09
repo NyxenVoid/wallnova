@@ -32,7 +32,8 @@ const Profile = () => {
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
   const [saving, setSaving] = useState(false);
-
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; image_url: string; title: string } | null>(null);
+  const deleteWallpaper = useDeleteWallpaper();
   // Fetch user's wallpapers
   const { data: allWallpapers } = useWallpapers();
   const myWallpapers = (allWallpapers || []).filter((w) => w.user_id === user?.id);
