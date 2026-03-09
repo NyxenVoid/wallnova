@@ -201,8 +201,9 @@ Rules:
     let result: ModerationResult;
     try {
       const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
-      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { approved: true, violations: [] };
-      // Don't silently approve on parse failure - block suspicious content
+      if (!jsonMatch) throw new Error("No JSON found");
+      result = JSON.parse(jsonMatch[0]);
+    } catch (parseErr) {
       console.error("Failed to parse moderation response:", rawContent);
       result = { approved: false, violations: [{ type: "spam", severity: "warning" as const, details: "Content could not be verified. Please try again.", confidence: 1.0 }] };
     }
