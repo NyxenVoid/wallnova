@@ -257,6 +257,37 @@ export function useRateWallpaper() {
   });
 }
 
+export function useDeleteWallpaper() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (wallpaper: { id: string; image_url: string }) => {
+      if (!user) throw new Error("Must be signed in");
+
+      // Extract storage path from the public URL
+      const urlParts = wallpaper.image_url.split("/storage/v1/object/public/wallpapers/");
+      if (urlParts.length === 2) {
+        const storagePath = decodeURIComponent(urlParts[1]);
+        await supabase.storage.from("wallpapers").remove([storagePath]);
+      }
+
+      const { error } = await supabase
+        .from("wallpapers")
+        .delete()
+        .eq("id", wallpaper.id)
+        .eq("user_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wallpapers"] });
+      queryClient.invalidateQueries({ queryKey: ["wallpaper"] });
+      toast.success("Wallpaper deleted!");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
 export function useUploadWallpaper() {
   const queryClient = useQueryClient();
   const { user } = useAuth();

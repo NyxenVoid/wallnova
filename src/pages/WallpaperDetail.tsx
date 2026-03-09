@@ -1,8 +1,9 @@
-import { useParams, Link } from "react-router-dom";
-import { Download, Heart, Star, ArrowLeft, Share2, Monitor, Smartphone, Tag, Play } from "lucide-react";
+import { useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { Download, Heart, Star, ArrowLeft, Share2, Monitor, Smartphone, Tag, Play, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { wallpapers } from "@/data/wallpapers";
-import { useWallpaper, useToggleLike, useRateWallpaper } from "@/hooks/use-wallpapers";
+import { useWallpaper, useToggleLike, useRateWallpaper, useDeleteWallpaper } from "@/hooks/use-wallpapers";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import WallpaperCard from "@/components/WallpaperCard";
@@ -11,6 +12,10 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { generateWallpaperTitle, generateWallpaperDescription, generateImageAlt, wallpaperJsonLd } from "@/lib/seo";
 import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const isVideo = (url: string) => /\.(mp4|webm)(\?|$)/i.test(url);
 const isGif = (url: string) => /\.gif(\?|$)/i.test(url);
