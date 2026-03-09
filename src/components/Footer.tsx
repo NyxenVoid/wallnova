@@ -6,17 +6,15 @@ const Footer = () => {
     <footer className="border-t border-glass-border mt-20">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Brand */}
           <div>
             <Link to="/" className="font-display text-xl font-bold text-foreground">
               Wall<span className="text-primary">Nova</span>
             </Link>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-              Discover and download stunning wallpapers for every device. Join our community of creators.
+              Discover and download stunning wallpapers for every device.
             </p>
           </div>
 
-          {/* Explore */}
           <div>
             <h4 className="font-display font-semibold text-foreground mb-3">Explore</h4>
             <div className="flex flex-col gap-2">
@@ -27,18 +25,14 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Community */}
           <div>
             <h4 className="font-display font-semibold text-foreground mb-3">Community</h4>
             <div className="flex flex-col gap-2">
-              <Link to="/leaderboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Leaderboard</Link>
-              <Link to="/upload" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Upload</Link>
               <Link to="/content-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Content Policy</Link>
               <span className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">Discord</span>
             </div>
           </div>
 
-          {/* Legal */}
           <div>
             <h4 className="font-display font-semibold text-foreground mb-3">Legal</h4>
             <div className="flex flex-col gap-2">

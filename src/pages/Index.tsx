@@ -14,21 +14,19 @@ import { supabase } from "@/integrations/supabase/client";
 const Index = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [liveStats, setLiveStats] = useState({ wallpapers: 0, downloads: 0, creators: 0 });
+  const [liveStats, setLiveStats] = useState({ wallpapers: 0, downloads: 0 });
   const trending = wallpapers.filter((w) => w.trending);
   const featured = wallpapers.filter((w) => w.featured);
   const dailyPick = wallpapers[6];
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [{ count: wallpaperCount }, downloadsRes, creatorsRes] = await Promise.all([
+      const [{ count: wallpaperCount }, downloadsRes] = await Promise.all([
         supabase.from("wallpapers").select("*", { count: "exact", head: true }),
         supabase.from("wallpapers").select("downloads"),
-        supabase.from("wallpapers").select("user_id"),
       ]);
       const totalDownloads = (downloadsRes.data || []).reduce((sum, w) => sum + (w.downloads || 0), 0);
-      const uniqueCreators = new Set((creatorsRes.data || []).map((w) => w.user_id)).size;
-      setLiveStats({ wallpapers: wallpaperCount || 0, downloads: totalDownloads, creators: uniqueCreators });
+      setLiveStats({ wallpapers: wallpaperCount || 0, downloads: totalDownloads });
     };
     fetchStats();
   }, []);
@@ -37,13 +35,12 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <SEOHead
         title="WallNova — Free HD, 4K & Mobile Wallpapers Download"
-        description="Download thousands of free HD, 4K, and mobile wallpapers for every device. Explore trending wallpapers from talented creators worldwide on WallNova."
+        description="Download thousands of free HD, 4K, and mobile wallpapers for every device. Explore trending wallpapers on WallNova."
         canonical="/"
         jsonLd={websiteJsonLd()}
       />
       <Navbar />
 
-      {/* Hero Section */}
       <section className="relative h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img src={heroBg} alt="WallNova – free HD wallpapers for desktop and mobile" className="h-full w-full object-cover" fetchPriority="high" />
@@ -58,7 +55,7 @@ const Index = () => {
               <br />Wallpapers
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8">
-              Explore thousands of high-quality wallpapers from talented creators worldwide
+              Explore thousands of high-quality wallpapers for every device
             </p>
           </motion.div>
 
@@ -66,23 +63,14 @@ const Index = () => {
             <div className="relative">
               <form onSubmit={(e) => { e.preventDefault(); if (searchQuery.trim()) navigate(`/explore?search=${encodeURIComponent(searchQuery.trim())}`); }}>
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search wallpapers, categories, creators..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="glass-input w-full pl-12 pr-32 py-4 text-base rounded-2xl"
-                />
-                <button type="submit" className="btn-glow absolute right-2 top-1/2 -translate-y-1/2 text-sm px-5 py-2 rounded-xl">
-                  Search
-                </button>
+                <input type="text" placeholder="Search wallpapers, categories..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                  className="glass-input w-full pl-12 pr-32 py-4 text-base rounded-2xl" />
+                <button type="submit" className="btn-glow absolute right-2 top-1/2 -translate-y-1/2 text-sm px-5 py-2 rounded-xl">Search</button>
               </form>
             </div>
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               {["Cyberpunk", "4K", "Anime", "Nature", "Dark"].map((tag) => (
-                <span key={tag} onClick={() => navigate(`/explore?search=${encodeURIComponent(tag)}`)} className="badge-glass text-muted-foreground hover:text-primary cursor-pointer transition-colors">
-                  {tag}
-                </span>
+                <span key={tag} onClick={() => navigate(`/explore?search=${encodeURIComponent(tag)}`)} className="badge-glass text-muted-foreground hover:text-primary cursor-pointer transition-colors">{tag}</span>
               ))}
             </div>
           </motion.div>
@@ -91,7 +79,6 @@ const Index = () => {
             {[
               { label: "Wallpapers", value: liveStats.wallpapers.toLocaleString() },
               { label: "Downloads", value: liveStats.downloads.toLocaleString() },
-              { label: "Creators", value: liveStats.creators.toLocaleString() },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="font-display text-2xl font-bold text-primary">{stat.value}</div>
@@ -102,7 +89,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Trending */}
       <section className="container mx-auto px-4 py-16">
         <SectionHeader icon={<TrendingUp size={20} />} title="Trending Now" subtitle="Most popular wallpapers this week" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
@@ -110,7 +96,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Daily Pick */}
       <section className="container mx-auto px-4 py-8">
         <SectionHeader icon={<Award size={20} />} title="Wallpaper of the Day" subtitle="Hand-picked by our team" />
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-8">
@@ -131,7 +116,6 @@ const Index = () => {
         </motion.div>
       </section>
 
-      {/* Categories */}
       <section className="container mx-auto px-4 py-16">
         <SectionHeader icon={<Sparkles size={20} />} title="Categories" subtitle="Browse by your favorite style" />
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-8">
@@ -149,7 +133,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Featured */}
       <section className="container mx-auto px-4 py-16">
         <SectionHeader icon={<Sparkles size={20} />} title="Featured Wallpapers" subtitle="Editor's choice picks" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
@@ -157,7 +140,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Latest */}
       <section className="container mx-auto px-4 py-16">
         <SectionHeader icon={<Clock size={20} />} title="Latest Uploads" subtitle="Fresh wallpapers just added" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
@@ -165,7 +147,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Ad Space */}
       <section className="container mx-auto px-4 py-8">
         <div className="glass-card rounded-2xl p-8 text-center">
           <p className="text-xs text-muted-foreground tracking-widest uppercase">Advertisement</p>
