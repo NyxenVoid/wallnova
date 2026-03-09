@@ -1,16 +1,20 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, Settings, Image, Heart, Star, Edit2, LogOut, Camera } from "lucide-react";
+import { User, Settings, Image, Heart, Star, Edit2, LogOut, Camera, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWallpapers } from "@/hooks/use-wallpapers";
+import { useWallpapers, useDeleteWallpaper } from "@/hooks/use-wallpapers";
 import WallpaperCard from "@/components/WallpaperCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Profile = () => {
   const { user, signOut } = useAuth();
