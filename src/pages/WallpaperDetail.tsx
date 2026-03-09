@@ -223,6 +223,15 @@ const WallpaperDetail = () => {
                   <Share2 size={16} /> Share
                 </button>
               </div>
+
+              {isDbWallpaper && user && dbWallpaper && user.id === dbWallpaper.user_id && (
+                <button
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="w-full mt-2 glass-card flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                >
+                  <Trash2 size={16} /> Delete Wallpaper
+                </button>
+              )}
             </div>
 
             <div className="glass-card p-6 rounded-2xl">
