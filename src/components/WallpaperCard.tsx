@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Download, Heart, Star, Play } from "lucide-react";
+import { Download, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { generateImageAlt } from "@/lib/seo";
 import type { Wallpaper } from "@/data/wallpapers";
@@ -35,29 +35,21 @@ const WallpaperCard = ({ wallpaper, index = 0 }: WallpaperCardProps) => {
               <video
                 src={wallpaper.imageUrl}
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                autoPlay
-                loop
-                muted
-                playsInline
+                autoPlay loop muted playsInline
               />
             ) : (
               <img
                 src={wallpaper.imageUrl}
                 alt={altText}
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                loading="lazy"
-                decoding="async"
+                loading="lazy" decoding="async"
               />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
             <div className="absolute top-3 left-3 flex gap-2">
-              {wallpaper.trending && (
-                <span className="badge-glass text-primary">🔥 Trending</span>
-              )}
-              {wallpaper.featured && (
-                <span className="badge-glass text-accent">⭐ Featured</span>
-              )}
+              {wallpaper.trending && <span className="badge-glass text-primary">🔥 Trending</span>}
+              {wallpaper.featured && <span className="badge-glass text-accent">⭐ Featured</span>}
               {animated && (
                 <span className="badge-glass text-primary flex items-center gap-1">
                   <Play size={10} /> Animated
@@ -65,29 +57,17 @@ const WallpaperCard = ({ wallpaper, index = 0 }: WallpaperCardProps) => {
               )}
             </div>
 
-            <span className="absolute top-3 right-3 badge-glass uppercase tracking-wider text-foreground/70">
-              {wallpaper.type}
-            </span>
+            <span className="absolute top-3 right-3 badge-glass uppercase tracking-wider text-foreground/70">{wallpaper.type}</span>
 
             <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1 text-xs text-foreground/80">
-                  <Download size={12} /> {formatCount(wallpaper.downloads)}
-                </span>
-                <span className="flex items-center gap-1 text-xs text-foreground/80">
-                  <Heart size={12} /> {formatCount(wallpaper.likes)}
-                </span>
-              </div>
-              <span className="flex items-center gap-1 text-xs text-primary">
-                <Star size={12} fill="currentColor" /> {wallpaper.rating}
+              <span className="flex items-center gap-1 text-xs text-foreground/80">
+                <Download size={12} /> {formatCount(wallpaper.downloads)}
               </span>
             </div>
           </div>
 
           <div className="p-3">
-            <h3 className="font-display text-sm font-semibold text-foreground truncate">
-              {wallpaper.title}
-            </h3>
+            <h3 className="font-display text-sm font-semibold text-foreground truncate">{wallpaper.title}</h3>
             <div className="mt-1 flex items-center justify-between">
               <span className="text-xs text-muted-foreground">{wallpaper.category}</span>
               <span className="text-xs text-muted-foreground">{wallpaper.resolution}</span>

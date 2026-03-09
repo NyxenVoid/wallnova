@@ -1,10 +1,8 @@
-import { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { Download, Heart, Star, ArrowLeft, Share2, Monitor, Smartphone, Tag, Play, Trash2 } from "lucide-react";
+import { useParams, Link } from "react-router-dom";
+import { Download, ArrowLeft, Monitor, Smartphone, Tag, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { wallpapers } from "@/data/wallpapers";
-import { useWallpaper, useToggleLike, useRateWallpaper, useDeleteWallpaper } from "@/hooks/use-wallpapers";
-import { useAuth } from "@/contexts/AuthContext";
+import { useWallpaper } from "@/hooks/use-wallpapers";
 import { supabase } from "@/integrations/supabase/client";
 import WallpaperCard from "@/components/WallpaperCard";
 import Navbar from "@/components/Navbar";
@@ -12,23 +10,13 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { generateWallpaperTitle, generateWallpaperDescription, generateImageAlt, wallpaperJsonLd } from "@/lib/seo";
 import { toast } from "sonner";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 const isVideo = (url: string) => /\.(mp4|webm)(\?|$)/i.test(url);
 const isGif = (url: string) => /\.gif(\?|$)/i.test(url);
 
 const WallpaperDetail = () => {
   const { id } = useParams();
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const { data: dbWallpaper } = useWallpaper(id);
-  const toggleLike = useToggleLike();
-  const rateWallpaper = useRateWallpaper();
-  const deleteWallpaper = useDeleteWallpaper();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const staticWallpaper = wallpapers.find((w) => w.id === id);
   const isDbWallpaper = !!dbWallpaper;
@@ -44,19 +32,21 @@ const WallpaperDetail = () => {
         type: dbWallpaper.type,
         tags: dbWallpaper.tags,
         downloads: dbWallpaper.downloads,
-        likes: dbWallpaper.likes_count || 0,
-        rating: dbWallpaper.avg_rating || 0,
-        creator: {
-          name: dbWallpaper.creator_name || "Unknown",
-          avatar: dbWallpaper.creator_avatar || "",
-          id: dbWallpaper.user_id,
-        },
         createdAt: dbWallpaper.created_at,
-        userLiked: dbWallpaper.user_liked,
-        userRating: dbWallpaper.user_rating,
       }
     : staticWallpaper
-    ? { ...staticWallpaper, imageUrl: staticWallpaper.imageUrl, userLiked: false, userRating: 0 }
+    ? {
+        id: staticWallpaper.id,
+        title: staticWallpaper.title,
+        description: staticWallpaper.description,
+        imageUrl: staticWallpaper.imageUrl,
+        category: staticWallpaper.category,
+        resolution: staticWallpaper.resolution,
+        type: staticWallpaper.type,
+        tags: staticWallpaper.tags,
+        downloads: staticWallpaper.downloads,
+        createdAt: staticWallpaper.createdAt,
+      }
     : null;
 
   if (!wallpaper) {
@@ -80,29 +70,14 @@ const WallpaperDetail = () => {
     imageUrl: wallpaper.imageUrl,
     category: wallpaper.category,
     resolution: wallpaper.resolution,
-    creator: wallpaper.creator,
+    creator: { name: "WallNova" },
     createdAt: wallpaper.createdAt,
     downloads: wallpaper.downloads,
-    rating: wallpaper.rating,
+    rating: 0,
   });
-
-  const handleLike = () => {
-    if (!user) { toast.error("Sign in to like wallpapers"); return; }
-    if (isDbWallpaper) {
-      toggleLike.mutate({ wallpaperId: wallpaper.id, liked: !!wallpaper.userLiked });
-    }
-  };
-
-  const handleRate = (star: number) => {
-    if (!user) { toast.error("Sign in to rate wallpapers"); return; }
-    if (isDbWallpaper) {
-      rateWallpaper.mutate({ wallpaperId: wallpaper.id, rating: star });
-    }
-  };
 
   const handleDownload = async () => {
     try {
-      // For DB wallpapers stored in Supabase storage, increment download count
       if (isDbWallpaper) {
         await supabase
           .from("wallpapers")
@@ -110,13 +85,11 @@ const WallpaperDetail = () => {
           .eq("id", wallpaper.id);
       }
 
-      // Fetch and download the file
       const response = await fetch(wallpaper.imageUrl);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      // Generate a nice filename
       const slug = wallpaper.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
       const ext = isVideo(wallpaper.imageUrl) ? (wallpaper.imageUrl.includes(".webm") ? "webm" : "mp4") : isGif(wallpaper.imageUrl) ? "gif" : "jpg";
       a.download = `${slug}-wallnova.${ext}`;
@@ -136,8 +109,6 @@ const WallpaperDetail = () => {
     : related;
 
   const formatCount = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : n.toString());
-  const liked = wallpaper.userLiked || false;
-  const userRating = wallpaper.userRating || 0;
   const animated = isVideo(wallpaper.imageUrl) || isGif(wallpaper.imageUrl);
 
   return (
@@ -163,23 +134,9 @@ const WallpaperDetail = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2">
             <div className="glass-card overflow-hidden rounded-2xl relative">
               {isVideo(wallpaper.imageUrl) ? (
-                <video
-                  src={wallpaper.imageUrl}
-                  className="w-full h-auto object-cover"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  controls
-                />
+                <video src={wallpaper.imageUrl} className="w-full h-auto object-cover" autoPlay loop muted playsInline controls />
               ) : (
-                <img
-                  src={wallpaper.imageUrl}
-                  alt={altText}
-                  className="w-full h-auto object-cover"
-                  loading="eager"
-                  fetchPriority="high"
-                />
+                <img src={wallpaper.imageUrl} alt={altText} className="w-full h-auto object-cover" loading="eager" fetchPriority="high" />
               )}
               {animated && (
                 <span className="absolute top-3 left-3 badge-glass text-primary flex items-center gap-1">
@@ -198,55 +155,11 @@ const WallpaperDetail = () => {
                 <span className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Download size={14} /> {formatCount(wallpaper.downloads)}
                 </span>
-                <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Heart size={14} /> {formatCount(wallpaper.likes)}
-                </span>
-                <span className="flex items-center gap-1 text-sm text-primary">
-                  <Star size={14} fill="currentColor" /> {wallpaper.rating}
-                </span>
               </div>
 
               <button onClick={handleDownload} className="btn-glow w-full mt-6 flex items-center justify-center gap-2 py-3">
                 <Download size={18} /> Download Wallpaper
               </button>
-
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={handleLike}
-                  className={`flex-1 glass-card flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${
-                    liked ? "text-red-400 border-red-400/30" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Heart size={16} fill={liked ? "currentColor" : "none"} /> {liked ? "Liked" : "Like"}
-                </button>
-                <button className="flex-1 glass-card flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                  <Share2 size={16} /> Share
-                </button>
-              </div>
-
-              {isDbWallpaper && user && dbWallpaper && user.id === dbWallpaper.user_id && (
-                <button
-                  onClick={() => setShowDeleteDialog(true)}
-                  className="w-full mt-2 glass-card flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-                >
-                  <Trash2 size={16} /> Delete Wallpaper
-                </button>
-              )}
-            </div>
-
-            <div className="glass-card p-6 rounded-2xl">
-              <h3 className="font-display text-sm font-semibold text-foreground mb-3">Rate this wallpaper</h3>
-              <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button key={star} onClick={() => handleRate(star)} className="p-1 transition-transform hover:scale-125">
-                    <Star
-                      size={24}
-                      className={star <= userRating ? "text-primary" : "text-muted-foreground/30"}
-                      fill={star <= userRating ? "currentColor" : "none"}
-                    />
-                  </button>
-                ))}
-              </div>
             </div>
 
             <div className="glass-card p-6 rounded-2xl space-y-3">
@@ -255,17 +168,6 @@ const WallpaperDetail = () => {
               <DetailRow icon={<Smartphone size={14} />} label="Type" value={wallpaper.type.charAt(0).toUpperCase() + wallpaper.type.slice(1)} />
               <DetailRow icon={<Tag size={14} />} label="Category" value={wallpaper.category} />
               {animated && <DetailRow icon={<Play size={14} />} label="Format" value="Animated" />}
-            </div>
-
-            <div className="glass-card p-6 rounded-2xl">
-              <h3 className="font-display text-sm font-semibold text-foreground mb-3">Creator</h3>
-              <div className="flex items-center gap-3">
-                <img src={wallpaper.creator.avatar} alt={`${wallpaper.creator.name} avatar`} className="w-10 h-10 rounded-full bg-muted" loading="lazy" />
-                <div>
-                  <p className="font-display text-sm font-semibold text-foreground">{wallpaper.creator.name}</p>
-                  <p className="text-xs text-muted-foreground">View Profile</p>
-                </div>
-              </div>
             </div>
 
             <div className="glass-card p-6 rounded-2xl">
@@ -294,33 +196,6 @@ const WallpaperDetail = () => {
           </div>
         </section>
       </div>
-
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete wallpaper?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{wallpaper.title}"? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                if (dbWallpaper) {
-                  deleteWallpaper.mutate(
-                    { id: dbWallpaper.id, image_url: dbWallpaper.image_url },
-                    { onSuccess: () => navigate("/profile") }
-                  );
-                }
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <Footer />
     </div>

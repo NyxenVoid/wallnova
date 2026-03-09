@@ -12,13 +12,10 @@ import { collectionJsonLd } from "@/lib/seo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const resolutions = ["All", "768x1024", "1920x1080", "3840x2160"];
 const types = ["All", "mobile", "desktop", "4k", "animated"];
 const sortOptions = [
   { value: "popular", label: "Most Popular" },
   { value: "newest", label: "Newest" },
-  { value: "most-liked", label: "Most Liked" },
-  { value: "top-rated", label: "Top Rated" },
   { value: "most-downloaded", label: "Most Downloaded" },
 ];
 const colorFilters = [
@@ -48,8 +45,8 @@ const Explore = () => {
   const dbAsCards: Wallpaper[] = dbWallpapers.map((w) => ({
     id: w.id, title: w.title, description: w.description || "", imageUrl: w.image_url,
     category: w.category, resolution: w.resolution, type: w.type, tags: w.tags,
-    downloads: w.downloads, likes: w.likes_count || 0, rating: w.avg_rating || 0,
-    creator: { name: w.creator_name || "Unknown", avatar: w.creator_avatar || "", id: w.user_id },
+    downloads: w.downloads, likes: 0, rating: 0,
+    creator: { name: "WallNova", avatar: "", id: w.user_id },
     createdAt: w.created_at, featured: w.featured, trending: w.trending,
   }));
 
@@ -81,10 +78,8 @@ const Explore = () => {
     }
     switch (sortBy) {
       case "newest": results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); break;
-      case "most-liked": results.sort((a, b) => b.likes - a.likes); break;
-      case "top-rated": results.sort((a, b) => b.rating - a.rating); break;
       case "most-downloaded": results.sort((a, b) => b.downloads - a.downloads); break;
-      default: results.sort((a, b) => b.downloads + b.likes - (a.downloads + a.likes));
+      default: results.sort((a, b) => b.downloads - a.downloads);
     }
     return results;
   }, [searchQuery, selectedCategory, selectedType, selectedColor, sortBy]);
@@ -92,7 +87,6 @@ const Explore = () => {
   const activeFilterCount = [selectedCategory !== "All", selectedType !== "All", selectedColor !== "All"].filter(Boolean).length;
   const clearFilters = () => { setSelectedCategory("All"); setSelectedType("All"); setSelectedColor("All"); setSearchQuery(""); setSortBy("popular"); };
 
-  // Dynamic SEO
   const pageTitle = selectedCategory !== "All"
     ? `${selectedCategory} Wallpapers – Free HD & 4K Download`
     : searchQuery
