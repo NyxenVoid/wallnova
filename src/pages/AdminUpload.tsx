@@ -9,8 +9,6 @@ import { Input } from "@/components/ui/input";
 import { useAdminUploadWallpaper } from "@/hooks/use-wallpapers";
 import { categories } from "@/data/wallpapers";
 
-const ADMIN_KEY = "wallnova-admin-2026";
-
 const types = [
   { value: "mobile", label: "Mobile" },
   { value: "desktop", label: "Desktop" },
@@ -26,7 +24,9 @@ const AdminUpload = () => {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [authenticated, setAuthenticated] = useState(false);
+  const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -45,22 +45,33 @@ const AdminUpload = () => {
           <div className="glass-card p-8 rounded-2xl">
             <Lock className="mx-auto text-primary mb-4" size={32} />
             <h1 className="font-display text-2xl font-bold text-foreground mb-2">Admin Access</h1>
-            <p className="text-sm text-muted-foreground mb-6">Enter admin password to upload wallpapers</p>
+            <p className="text-sm text-muted-foreground mb-6">Sign in with admin credentials to upload wallpapers</p>
             <form onSubmit={(e) => {
               e.preventDefault();
-              if (adminPassword === ADMIN_KEY) {
+              if (adminEmail && adminPassword) {
                 setAuthenticated(true);
+                setLoginError("");
               } else {
-                setAdminPassword("");
+                setLoginError("Please enter email and password");
               }
             }}>
+              <Input
+                type="email"
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
+                placeholder="Admin email"
+                className="bg-secondary/50 border-border mb-3"
+                required
+              />
               <Input
                 type="password"
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
                 placeholder="Admin password"
                 className="bg-secondary/50 border-border mb-4"
+                required
               />
+              {loginError && <p className="text-destructive text-xs mb-3">{loginError}</p>}
               <Button type="submit" className="btn-glow w-full">Unlock</Button>
             </form>
           </div>
@@ -91,7 +102,7 @@ const AdminUpload = () => {
       resolution = `${img.naturalWidth}x${img.naturalHeight}`;
     }
 
-    await upload.mutateAsync({ file, title, description, category, type, tags: finalTags, resolution });
+    await upload.mutateAsync({ file, title, description, category, type, tags: finalTags, resolution, adminEmail, adminPassword });
     navigate("/explore");
   };
 
