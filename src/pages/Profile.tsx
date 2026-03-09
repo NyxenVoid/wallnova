@@ -204,7 +204,20 @@ const Profile = () => {
               {cardWallpapers.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                   {cardWallpapers.map((w, i) => (
-                    <WallpaperCard key={w.id} wallpaper={w} index={i} />
+                    <div key={w.id} className="relative group/card">
+                      <WallpaperCard wallpaper={w} index={i} />
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const orig = myWallpapers.find((mw) => mw.id === w.id);
+                          if (orig) setDeleteTarget({ id: orig.id, image_url: orig.image_url, title: orig.title });
+                        }}
+                        className="absolute top-2 right-2 z-10 p-2 rounded-full bg-background/80 text-destructive opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
+                        title="Delete wallpaper"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   ))}
                 </div>
               ) : (
