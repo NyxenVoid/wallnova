@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Download, Heart, Star } from "lucide-react";
+import { Download, Heart, Star, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { generateImageAlt } from "@/lib/seo";
 import type { Wallpaper } from "@/data/wallpapers";
@@ -9,6 +9,9 @@ interface WallpaperCardProps {
   index?: number;
 }
 
+const isVideo = (url: string) => /\.(mp4|webm)(\?|$)/i.test(url);
+const isAnimated = (url: string) => /\.(mp4|webm|gif)(\?|$)/i.test(url);
+
 const WallpaperCard = ({ wallpaper, index = 0 }: WallpaperCardProps) => {
   const formatCount = (n: number) => {
     if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
@@ -16,6 +19,7 @@ const WallpaperCard = ({ wallpaper, index = 0 }: WallpaperCardProps) => {
   };
 
   const altText = generateImageAlt(wallpaper.title, wallpaper.category, wallpaper.type);
+  const animated = isAnimated(wallpaper.imageUrl);
 
   return (
     <motion.div
@@ -27,13 +31,24 @@ const WallpaperCard = ({ wallpaper, index = 0 }: WallpaperCardProps) => {
       <Link to={`/wallpaper/${wallpaper.id}`} className="group block">
         <div className="glass-card-hover overflow-hidden">
           <div className="relative aspect-[3/4] overflow-hidden">
-            <img
-              src={wallpaper.imageUrl}
-              alt={altText}
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-              loading="lazy"
-              decoding="async"
-            />
+            {isVideo(wallpaper.imageUrl) ? (
+              <video
+                src={wallpaper.imageUrl}
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
+            ) : (
+              <img
+                src={wallpaper.imageUrl}
+                alt={altText}
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                loading="lazy"
+                decoding="async"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
             <div className="absolute top-3 left-3 flex gap-2">
@@ -42,6 +57,11 @@ const WallpaperCard = ({ wallpaper, index = 0 }: WallpaperCardProps) => {
               )}
               {wallpaper.featured && (
                 <span className="badge-glass text-accent">⭐ Featured</span>
+              )}
+              {animated && (
+                <span className="badge-glass text-primary flex items-center gap-1">
+                  <Play size={10} /> Animated
+                </span>
               )}
             </div>
 

@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload as UploadIcon, Image, X } from "lucide-react";
+import { Upload as UploadIcon, Image, X, Film } from "lucide-react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -16,6 +16,10 @@ const types = [
   { value: "4k", label: "4K" },
 ] as const;
 
+const ACCEPTED_TYPES = "image/*,video/mp4,video/webm,image/gif";
+
+const isVideoFile = (file: File) => file.type.startsWith("video/") || file.type === "image/gif";
+
 const Upload = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -24,6 +28,7 @@ const Upload = () => {
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [isAnimated, setIsAnimated] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Other");
@@ -45,9 +50,9 @@ const Upload = () => {
 
   const handleFile = (f: File) => {
     setFile(f);
-    const reader = new FileReader();
-    reader.onload = (e) => setPreview(e.target?.result as string);
-    reader.readAsDataURL(f);
+    setIsAnimated(isVideoFile(f));
+    const url = URL.createObjectURL(f);
+    setPreview(url);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,13 +64,18 @@ const Upload = () => {
       .map((t) => t.trim().toLowerCase())
       .filter(Boolean);
 
-    // Get resolution from image
-    const img = new window.Image();
-    img.src = preview!;
-    await new Promise((r) => (img.onload = r));
-    const resolution = `${img.naturalWidth}x${img.naturalHeight}`;
+    // Add "animated" tag automatically for animated files
+    const finalTags = isAnimated && !tags.includes("animated") ? [...tags, "animated"] : tags;
 
-    await upload.mutateAsync({ file, title, description, category, type, tags, resolution });
+    let resolution = "1920x1080";
+    if (!isVideoFile(file)) {
+      const img = new window.Image();
+      img.src = preview!;
+      await new Promise((r) => (img.onload = r));
+      resolution = `${img.naturalWidth}x${img.naturalHeight}`;
+    }
+
+    await upload.mutateAsync({ file, title, description, category, type, tags: finalTags, resolution });
     navigate("/explore");
   };
 
@@ -102,27 +112,39 @@ const Upload = () => {
           >
             {preview ? (
               <div className="relative">
-                <img src={preview} alt="Preview" className="max-h-64 mx-auto rounded-xl object-contain" />
+                {isAnimated && file?.type.startsWith("video/") ? (
+                  <video src={preview} className="max-h-64 mx-auto rounded-xl object-contain" autoPlay loop muted playsInline />
+                ) : (
+                  <img src={preview} alt="Preview" className="max-h-64 mx-auto rounded-xl object-contain" />
+                )}
                 <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); setFile(null); setPreview(null); }}
+                  onClick={(e) => { e.stopPropagation(); setFile(null); setPreview(null); setIsAnimated(false); }}
                   className="absolute top-2 right-2 p-1 rounded-full bg-background/80 text-foreground hover:bg-destructive hover:text-destructive-foreground"
                 >
                   <X size={16} />
                 </button>
+                {isAnimated && (
+                  <span className="absolute top-2 left-2 badge-glass text-primary flex items-center gap-1 text-xs">
+                    <Film size={12} /> Animated
+                  </span>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
                 <Image className="mx-auto text-muted-foreground" size={40} />
                 <p className="text-muted-foreground text-sm">
-                  Drag & drop or click to select an image
+                  Drag & drop or click to select an image or video
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  Supports JPG, PNG, WebP, GIF, MP4, WebM
                 </p>
               </div>
             )}
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept={ACCEPTED_TYPES}
               className="hidden"
               onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
             />

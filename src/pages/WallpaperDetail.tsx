@@ -1,15 +1,19 @@
 import { useParams, Link } from "react-router-dom";
-import { Download, Heart, Star, ArrowLeft, Share2, Monitor, Smartphone, Tag } from "lucide-react";
+import { Download, Heart, Star, ArrowLeft, Share2, Monitor, Smartphone, Tag, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { wallpapers } from "@/data/wallpapers";
 import { useWallpaper, useToggleLike, useRateWallpaper } from "@/hooks/use-wallpapers";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import WallpaperCard from "@/components/WallpaperCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { generateWallpaperTitle, generateWallpaperDescription, generateImageAlt, wallpaperJsonLd } from "@/lib/seo";
 import { toast } from "sonner";
+
+const isVideo = (url: string) => /\.(mp4|webm)(\?|$)/i.test(url);
+const isGif = (url: string) => /\.gif(\?|$)/i.test(url);
 
 const WallpaperDetail = () => {
   const { id } = useParams();
@@ -88,6 +92,36 @@ const WallpaperDetail = () => {
     }
   };
 
+  const handleDownload = async () => {
+    try {
+      // For DB wallpapers stored in Supabase storage, increment download count
+      if (isDbWallpaper) {
+        await supabase
+          .from("wallpapers")
+          .update({ downloads: wallpaper.downloads + 1 })
+          .eq("id", wallpaper.id);
+      }
+
+      // Fetch and download the file
+      const response = await fetch(wallpaper.imageUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      // Generate a nice filename
+      const slug = wallpaper.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
+      const ext = isVideo(wallpaper.imageUrl) ? (wallpaper.imageUrl.includes(".webm") ? "webm" : "mp4") : isGif(wallpaper.imageUrl) ? "gif" : "jpg";
+      a.download = `${slug}-wallnova.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Download started!");
+    } catch {
+      toast.error("Failed to download. Please try again.");
+    }
+  };
+
   const related = wallpapers.filter((w) => w.id !== id && w.category === wallpaper.category).slice(0, 4);
   const moreRelated = related.length < 4
     ? [...related, ...wallpapers.filter((w) => w.id !== id && !related.find((r) => r.id === w.id)).slice(0, 4 - related.length)]
@@ -96,6 +130,7 @@ const WallpaperDetail = () => {
   const formatCount = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : n.toString());
   const liked = wallpaper.userLiked || false;
   const userRating = wallpaper.userRating || 0;
+  const animated = isVideo(wallpaper.imageUrl) || isGif(wallpaper.imageUrl);
 
   return (
     <div className="min-h-screen bg-background">
@@ -118,14 +153,31 @@ const WallpaperDetail = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2">
-            <div className="glass-card overflow-hidden rounded-2xl">
-              <img
-                src={wallpaper.imageUrl}
-                alt={altText}
-                className="w-full h-auto object-cover"
-                loading="eager"
-                fetchPriority="high"
-              />
+            <div className="glass-card overflow-hidden rounded-2xl relative">
+              {isVideo(wallpaper.imageUrl) ? (
+                <video
+                  src={wallpaper.imageUrl}
+                  className="w-full h-auto object-cover"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  controls
+                />
+              ) : (
+                <img
+                  src={wallpaper.imageUrl}
+                  alt={altText}
+                  className="w-full h-auto object-cover"
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              )}
+              {animated && (
+                <span className="absolute top-3 left-3 badge-glass text-primary flex items-center gap-1">
+                  <Play size={12} /> Animated
+                </span>
+              )}
             </div>
           </motion.div>
 
@@ -146,7 +198,7 @@ const WallpaperDetail = () => {
                 </span>
               </div>
 
-              <button className="btn-glow w-full mt-6 flex items-center justify-center gap-2 py-3">
+              <button onClick={handleDownload} className="btn-glow w-full mt-6 flex items-center justify-center gap-2 py-3">
                 <Download size={18} /> Download Wallpaper
               </button>
 
@@ -185,6 +237,7 @@ const WallpaperDetail = () => {
               <DetailRow icon={<Monitor size={14} />} label="Resolution" value={wallpaper.resolution} />
               <DetailRow icon={<Smartphone size={14} />} label="Type" value={wallpaper.type.charAt(0).toUpperCase() + wallpaper.type.slice(1)} />
               <DetailRow icon={<Tag size={14} />} label="Category" value={wallpaper.category} />
+              {animated && <DetailRow icon={<Play size={14} />} label="Format" value="Animated" />}
             </div>
 
             <div className="glass-card p-6 rounded-2xl">

@@ -36,7 +36,6 @@ export function useWallpapers(filters?: {
   return useQuery({
     queryKey: ["wallpapers", filters, user?.id],
     queryFn: async () => {
-      // Fetch wallpapers
       let query = supabase.from("wallpapers").select("*");
 
       if (filters?.category && filters.category !== "All") {
@@ -46,8 +45,10 @@ export function useWallpapers(filters?: {
         query = query.eq("type", filters.type);
       }
       if (filters?.search) {
+        // Search title, description, and tags using ilike and array contains
+        const q = `%${filters.search}%`;
         query = query.or(
-          `title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`
+          `title.ilike.${q},description.ilike.${q}`
         );
       }
 
@@ -68,19 +69,16 @@ export function useWallpapers(filters?: {
 
       const ids = wallpapers.map((w) => w.id);
 
-      // Fetch like counts
       const { data: likeCounts } = await supabase
         .from("wallpaper_likes")
         .select("wallpaper_id")
         .in("wallpaper_id", ids);
 
-      // Fetch ratings
       const { data: ratings } = await supabase
         .from("wallpaper_ratings")
         .select("wallpaper_id, rating")
         .in("wallpaper_id", ids);
 
-      // Fetch user's likes & ratings
       let userLikes: string[] = [];
       let userRatings: Record<string, number> = {};
       if (user) {
@@ -101,7 +99,6 @@ export function useWallpapers(filters?: {
         });
       }
 
-      // Fetch creator profiles
       const userIds = [...new Set(wallpapers.map((w) => w.user_id))];
       const { data: profiles } = await supabase
         .from("profiles")
@@ -112,7 +109,6 @@ export function useWallpapers(filters?: {
         profileMap[p.user_id] = p;
       });
 
-      // Aggregate
       const likeMap: Record<string, number> = {};
       (likeCounts || []).forEach((l) => {
         likeMap[l.wallpaper_id] = (likeMap[l.wallpaper_id] || 0) + 1;
@@ -285,12 +281,15 @@ export function useUploadWallpaper() {
     }) => {
       if (!user) throw new Error("Must be signed in");
 
-      // Convert image to base64 for moderation
-      const reader = new FileReader();
-      const imageBase64: string = await new Promise((resolve) => {
-        reader.onload = (e) => resolve(e.target?.result as string);
-        reader.readAsDataURL(file);
-      });
+      // For images, convert to base64 for moderation; for videos, moderate text only
+      let imageBase64: string | undefined;
+      if (file.type.startsWith("image/") && file.size < 5 * 1024 * 1024) {
+        const reader = new FileReader();
+        imageBase64 = await new Promise((resolve) => {
+          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.readAsDataURL(file);
+        });
+      }
 
       // Run AI moderation check
       const { data: modResult, error: modError } = await supabase.functions.invoke(
@@ -302,8 +301,10 @@ export function useUploadWallpaper() {
 
       if (modError) {
         console.error("Moderation error:", modError);
-        // Don't block on moderation service failure
-      } else if (modResult && !modResult.approved) {
+        throw new Error("Content moderation service is temporarily unavailable. Please try again.");
+      }
+      
+      if (modResult && !modResult.approved) {
         if (modResult.uploadLimitReached) {
           throw new Error("You've reached your daily upload limit of 3 wallpapers. Please try again tomorrow.");
         }
@@ -320,7 +321,9 @@ export function useUploadWallpaper() {
 
       const { error: uploadError } = await supabase.storage
         .from("wallpapers")
-        .upload(path, file);
+        .upload(path, file, {
+          contentType: file.type,
+        });
       if (uploadError) throw uploadError;
 
       const { data: urlData } = supabase.storage
