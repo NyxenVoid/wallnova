@@ -70,7 +70,11 @@ const Explore = () => {
       );
     }
     if (selectedCategory !== "All") results = results.filter((w) => w.category === selectedCategory);
-    if (selectedType !== "All") results = results.filter((w) => w.type === selectedType);
+    if (selectedType === "animated") {
+      results = results.filter((w) => /\.(gif|mp4|webm)(\?|$)/i.test(w.imageUrl) || w.tags.some((t) => t === "animated"));
+    } else if (selectedType !== "All") {
+      results = results.filter((w) => w.type === selectedType);
+    }
     if (selectedColor !== "All") {
       const colorTag = selectedColor.toLowerCase();
       results = results.filter((w) => w.tags.some((t) => t.includes(colorTag)) || w.description.toLowerCase().includes(colorTag));
